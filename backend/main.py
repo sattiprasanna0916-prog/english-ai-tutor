@@ -14,6 +14,8 @@ app = FastAPI(title="English AI Tutor API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "http://localhost:5500",   # ✅ ADD THIS
+        "http://127.0.0.1:5500",   # ✅ ADD THIS (important)
         "https://english-ai-tutor-three.vercel.app"
     ],
     allow_credentials=True,

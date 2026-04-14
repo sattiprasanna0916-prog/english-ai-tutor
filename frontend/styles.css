@@ -248,11 +248,7 @@ body{
   gap:14px;
 }
 
-.practiceGrid{
-  display:grid;
-  grid-template-columns:1.2fr 0.8fr;
-  gap:20px;
-}
+
 
 /* =========================
    🎤 CHAT + RECORD
@@ -369,10 +365,7 @@ body{
     grid-template-columns:1fr 1fr;
   }
 
-  .practiceGrid{
-    grid-template-columns:1fr;
-  }
-
+  
   .heroTitleBig{
     font-size:34px;
   }
@@ -759,7 +752,7 @@ body{
 .chatPanel {
   display: flex;
   flex-direction: column;
-  height: 75vh;
+  height: auto !important;
 }
 
 .chatBox {
@@ -815,12 +808,9 @@ body{
 
 /* MOBILE RESPONSIVE */
 @media (max-width: 900px) {
-  .practiceGrid {
-    grid-template-columns: 1fr;
-  }
-
+  
   .chatPanel, .aiPanel {
-    height: auto;
+    height: auto !important;;
   }
 }
 .chat-msg.ai {
@@ -892,4 +882,96 @@ body{
 }
 #stopBtn, #analyzeBtn, #nextBtn {
   display: none;
+}
+/* =========================
+   📱 MOBILE PERFECT FIX
+========================= */
+
+@media (max-width: 768px) {
+
+  /* STACK EVERYTHING */
+  .practiceGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .threeCol {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* REMOVE FIXED HEIGHTS */
+  .chatPanel,
+  .aiPanel {
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  /* IMPROVE SPACING */
+  .container {
+    padding: 15px 10px;
+  }
+
+  /* BUTTON FULL WIDTH */
+  .btn {
+    width: 100%;
+  }
+
+  /* TEXT SIZE */
+  .heroTitleBig {
+    font-size: 26px;
+  }
+
+  /* GRID FIX */
+  .featureGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .grid4 {
+    grid-template-columns: 1fr;
+  }
+
+  /* CHAT FIX */
+  .chatBox {
+    max-height: 300px;
+  }
+}
+/* ===== FINAL MOBILE POLISH ===== */
+@media (max-width: 768px){
+
+  /* NAVBAR FIX */
+  .topbar{
+    flex-direction: column;
+    align-items: flex-start;
+    gap:10px;
+  }
+
+  .navRight{
+    width:100%;
+    justify-content: space-between;
+  }
+
+  /* REMOVE HEIGHT ISSUES */
+  .aiPanel{
+    height:auto !important;
+    max-height:none !important;
+  }
+
+  /* AUTH CENTER FIX */
+  .auth-container{
+    padding:20px 10px;
+  }
+
+  .auth-card{
+    width:100%;
+  }
+
+}
+.practiceGrid,
+.analyticsGrid {
+  grid-template-columns: 1fr !important;
+}
+.aiPanel {
+  height: auto !important;
+}
+.topbar {
+  flex-direction: column;
 }
