@@ -1,7 +1,6 @@
 const API_BASE = window.location.origin.includes("localhost")
   ? "http://127.0.0.1:8000"
-  : window.location.origin;
-
+  : "https://english-ai-tutor-1.onrender.com";
 /* ---------------- STORAGE ---------------- */
 const idealAnswers = {
   "Software Engineer": "problem solving coding data structures algorithms system design",
