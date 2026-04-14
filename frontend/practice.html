@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SpeakSmart • Practice</title>
+  <link rel="stylesheet" href="styles.css">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body class="dark">
+
+<header class="topbar glass">
+  <div class="brand">
+    <div class="logo">SS</div>
+    <div>
+      <div class="brandTitle">SpeakSmart</div>
+      <div class="brandSub">AI Interview Coach</div>
+    </div>
+  </div>
+
+  <nav class="navRight">
+    <a href="home.html" class="btn ghost">Home</a>
+    <a href="practice.html" class="btn ghost active">Practice</a>
+    <a href="analytics.html" class="btn ghost">Analytics</a>
+    <button class="btn danger" onclick="logout()">Logout</button>
+  </nav>
+</header>
+
+<main class="container">
+
+  <!-- START -->
+  <section class="card glass">
+    <h2 class="h2">🎯 Start Interview</h2>
+
+    <div class="grid4 mt12">
+      <select id="level">
+        <option>Beginner</option>
+        <option>Intermediate</option>
+        <option>Advanced</option>
+      </select>
+
+      <select id="role">
+        <option>Software Engineer</option>
+        <option>Data Analyst</option>
+        <option>Product Manager</option>
+        <option>Machine Learning Engineer</option>
+        <option>Business Analyst</option>
+      </select>
+
+      <select id="category">
+        <option>HR</option>
+        <option>Technical</option>
+      </select>
+
+      <button class="btn primary glow" onclick="startInterview()">
+        🚀 Start Interview
+      </button>
+    </div>
+  </section>
+
+  <!-- MAIN -->
+  <div class="practiceGrid mt12 ">
+
+    <!-- LEFT -->
+    <section class="card glass chatPanel">
+      <h2 class="h2">💬 Interview (<span id="progress">0</span>/5)</h2>
+
+      <!-- Progress Bar -->
+      <div class="progressBar">
+        <div id="progressFill"></div>
+      </div>
+
+      <div id="chatBox" class="chatBox">
+        <div class="chat-empty">
+          🎯 Click "Start Interview" to begin <br>
+          You will be asked 5 questions
+        </div>
+      </div>
+    </section>
+
+    <!-- CENTER -->
+    <section class="card glass micPanel">
+
+      <h2 class="h2">🎤 Your Answer</h2>
+
+      <div class="micBox">
+        <div class="micCircle" id="micIndicator"></div>
+        <div id="status" class="status">Idle</div>
+        <div id="timer" class="timer">00:00</div>
+      </div>
+
+      <!-- RECORD -->
+      <div class="controlGroup">
+        <button id="startBtn" class="btn record" onclick="startRecording()">🎤 Start</button>
+        <button id="stopBtn" class="btn stop" onclick="stopRecording()">⛔ Stop</button>
+      </div>
+
+      <!-- FILE -->
+      <div class="controlGroup">
+        <input type="file" id="audioUpload" accept="audio/*" class="fileInput">
+      </div>
+
+      <!-- ANALYZE -->
+      <div class="controlGroup">
+        <button id="analyzeBtn" class="btn success" onclick="submitAudio()">📊 Analyze</button>
+      </div>
+
+      <!-- FLOW -->
+      <div class="controlGroup">
+        <button id="nextBtn" class="btn primary" onclick="nextQuestion()">➡️ Next</button>
+        <button class="btn danger" onclick="endInterview()">🛑 End</button>
+      </div>
+
+    </section>
+
+    <!-- RIGHT -->
+    <section id="resultSection" class="card glass aiPanel">
+
+      <h2 class="h2">🤖 AI Analysis</h2>
+
+      <p class="muted">Your AI feedback will appear here</p>
+
+      <div class="scoreGrid mt12">
+        <div class="scoreCard"><span>Fluency</span><h3 id="fluency">-</h3></div>
+        <div class="scoreCard"><span>Grammar</span><h3 id="grammar">-</h3></div>
+        <div class="scoreCard"><span>Accuracy</span><h3 id="accuracy">-</h3></div>
+        <div class="scoreCard finalScore"><span>Final Score</span><h3 id="final">-</h3></div>
+        <div class="scoreCard"><span>Improvement</span><h3 id="improvement">-</h3></div>
+      </div>
+
+      <button id="retryBtn" class="btn warning" onclick="retryAnswer()" style="display:none;">
+        🔁 Retry Answer
+      </button>
+
+      <div class="feedbackCard mt12">
+        <h3>💡 Feedback</h3>
+        <ul id="feedbackList"></ul>
+      </div>
+
+      <div class="improvedAnswerBox mt12">
+        <h3>✨ Improved Answer</h3>
+        <p id="improvedAnswer">Your improved answer will appear here</p>
+      </div>
+
+    </section>
+
+  </div>
+
+</main>
+
+<script src="app.js"></script>
+
+<script>
+if (!localStorage.getItem("user_id")) {
+  window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>

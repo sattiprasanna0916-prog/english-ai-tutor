@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SpeakSmart • Analytics</title>
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Chart -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="dark">
+
+<header class="topbar glass">
+  <div class="brand">
+    <div class="logo">SS</div>
+    <div>
+      <div class="brandTitle">SpeakSmart</div>
+      <div class="brandSub">AI Interview Coach</div>
+    </div>
+  </div>
+
+  <nav class="navRight">
+    <a href="home.html" class="btn ghost">Home</a>
+    <a href="practice.html" class="btn ghost">Practice</a>
+    <a href="analytics.html" class="btn ghost active">Analytics</a>
+    <button class="btn danger" onclick="logout()">Logout</button>
+  </nav>
+</header>
+
+<main class="container">
+
+  <div class="pageHead">
+    <h1 class="h1">📊 Analytics</h1>
+    <p class="muted">Your performance summary</p>
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <div class="grid4 mt12">
+
+    <div class="tile glass">
+      <div class="muted small">Level</div>
+      <div class="tileVal" id="userLevel">-</div>
+    </div>
+
+    <div class="tile glass">
+      <div class="muted small">Average Score</div>
+      <div class="tileVal" id="avgScore">-</div>
+    </div>
+
+    <div class="tile glass">
+      <div class="muted small">Weak Skill</div>
+      <div class="tileVal" id="weakSkill">-</div>
+    </div>
+
+    <div class="tile highlight glow">
+      <div class="muted small">🔥 Streak</div>
+      <div class="tileVal" id="streak">0 days</div>
+    </div>
+
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="analyticsGrid mt12">
+
+    <!-- CHART -->
+    <section class="card glass chartCard">
+      <h2 class="h2">📈 Score Trend</h2>
+      <canvas id="chart"></canvas>
+    </section>
+
+    <!-- SKILLS -->
+    <section class="card glass">
+      <h2 class="h2">🧠 Skill Levels</h2>
+
+      <div class="skill">
+        <span>Fluency</span>
+        <div class="bar"><div id="fluencyBar"></div></div>
+      </div>
+
+      <div class="skill">
+        <span>Grammar</span>
+        <div class="bar"><div id="grammarBar"></div></div>
+      </div>
+
+      <div class="skill">
+        <span>Accuracy</span>
+        <div class="bar"><div id="accuracyBar"></div></div>
+      </div>
+
+    </section>
+
+  </div>
+
+</main>
+
+<script src="app.js"></script>
+
+<script>
+  // 🔐 Protect page
+  if (!localStorage.getItem("user_id")) {
+    window.location.href = "index.html";
+  }
+
+  // 📊 Load analytics
+  document.addEventListener("DOMContentLoaded", loadAnalytics);
+</script>
+
+</body>
+</html>
