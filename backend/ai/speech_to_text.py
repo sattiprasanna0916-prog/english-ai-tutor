@@ -1,17 +1,16 @@
-_model = None
+import os
+from groq import Groq
+
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 def transcribe_audio(audio_path: str) -> str:
-    global _model
-
-    if _model is None:
-        try:
-            import whisper   # ✅ moved here
-            _model = whisper.load_model("small")
-        except Exception:
-            return ""
-
     try:
-        result = _model.transcribe(audio_path, fp16=False)
-        return (result.get("text") or "").strip()
-    except Exception:
+        with open(audio_path, "rb") as f:
+            response = client.audio.transcriptions.create(
+                file=f,
+                model="whisper-large-v3"
+            )
+        return response.text.strip()
+    except Exception as e:
+        print("Groq transcription error:", e)
         return ""

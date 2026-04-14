@@ -6,7 +6,6 @@ ffmpeg
 pandas
 numpy
 email-validator
-openai-whisper
 
 librosa
 soundfile
