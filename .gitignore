@@ -13,3 +13,9 @@ notebooks/
 
 # System files
 .DS_Store
+*.db
+get-pip.py
+__pycache__/
+*.pyc
+.env
+models/
