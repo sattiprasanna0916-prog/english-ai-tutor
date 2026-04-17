@@ -16,7 +16,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5500",   # ✅ ADD THIS
         "http://127.0.0.1:5500",   # ✅ ADD THIS (important)
-        "https://english-ai-tutor-acm8.vercel.app",
+        "https://english-ai-tutor-three.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
