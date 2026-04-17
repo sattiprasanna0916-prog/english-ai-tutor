@@ -18,6 +18,7 @@ def init_db():
     conn = get_connection()
     cur = conn.cursor()
 
+    # USERS TABLE
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users (
         user_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,9 +28,30 @@ def init_db():
     )
     """)
 
+    # ✅ ADD THIS (IMPORTANT)
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS attempts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        level TEXT,
+        question TEXT,
+        answer_text TEXT,
+        audio_duration REAL,
+        pause_count INTEGER,
+        filler_count INTEGER,
+        speech_rate REAL,
+        fluency_score REAL,
+        grammar_score REAL,
+        accuracy_score REAL,
+        final_score REAL,
+        feedback TEXT,
+        improved_answer TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
     conn.commit()
     conn.close()
-
 # 🚨 RUN ON START
 init_db()
 
