@@ -1,7 +1,8 @@
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 import tempfile
 import os
-
+from fastapi import Depends
+from backend.services.auth_service import verify_token
 # AI
 from backend.ai.audio_convert import ensure_wav_16k_mono
 from backend.ai.transformer_scorer import score_from_audio_transformer
@@ -25,6 +26,7 @@ async def submit_attempt(
     level: str = Form(...),
     question: str = Form(...),
     audio: UploadFile = File(...),
+    token_data: dict = Depends(verify_token),
 ):
     tmp_path = None
     wav_path = None

@@ -35,12 +35,20 @@ def register_user_route(payload: UserRegisterRequest):
 # -----------------------------
 # LOGIN (BETTER THAN URL EMAIL)
 # -----------------------------
+from backend.services.auth_service import create_access_token
+
 @router.post("/login")
 def login_user(email: EmailStr = Body(...)):
     user = get_user_by_email(email)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return user
+
+    token = create_access_token({"user_id": user["user_id"]})
+
+    return {
+        "access_token": token,
+        "user": user
+    }
 
 
 # -----------------------------

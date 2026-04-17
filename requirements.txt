@@ -11,3 +11,5 @@ librosa
 soundfile
 
 groq
+python-jose[cryptography]
+passlib[bcrypt]
