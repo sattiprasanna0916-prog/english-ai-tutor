@@ -4,9 +4,13 @@ from fastapi.responses import Response
 
 from backend.db import get_connection
 from backend.routes.user_routes import router as user_routes
-
+from backend.routes.question_routes import router as question_routes
+from backend.routes.attempt_routes import router as attempt_routes
+from backend.routes.progress_routes import router as progress_routes
 app = FastAPI(title="English AI Tutor API")
-
+app.include_router(question_routes)   # ✅ ADD THIS
+app.include_router(attempt_routes)    # ✅ ADD THIS
+app.include_router(progress_routes)   # ✅ ADD THIS
 # -----------------------------
 # ✅ DATABASE INIT (CRITICAL)
 # -----------------------------
