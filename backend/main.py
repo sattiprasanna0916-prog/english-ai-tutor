@@ -1,12 +1,34 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
-from backend.routes.question_routes import router as question_routes
+
+from backend.db import get_connection
 from backend.routes.user_routes import router as user_routes
-from backend.routes.attempt_routes import router as attempt_routes
-from backend.routes.progress_routes import router as progress_routes
 
 app = FastAPI(title="English AI Tutor API")
+
+# -----------------------------
+# ✅ DATABASE INIT (CRITICAL)
+# -----------------------------
+def init_db():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE,
+        branch TEXT,
+        current_level TEXT
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+# 🚨 RUN ON START
+init_db()
+
 
 # -----------------------------
 # CORS
@@ -14,36 +36,23 @@ app = FastAPI(title="English AI Tutor API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5500",   # ✅ ADD THIS
-        "http://127.0.0.1:5500",   # ✅ ADD THIS (important)
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
         "https://english-ai-tutor-three.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-@app.options("/{rest_of_path:path}")
-async def preflight_handler():
-    return Response(status_code=200)
+
 # -----------------------------
 # ROUTES
 # -----------------------------
 app.include_router(user_routes)
-app.include_router(attempt_routes)
-app.include_router(progress_routes)
-app.include_router(question_routes)
 
 # -----------------------------
 # ROOT
 # -----------------------------
 @app.get("/")
 def root():
-    return {"message": "English AI Tutor backend is running ✅"}
-
-
-# -----------------------------
-# FAVICON FIX
-# -----------------------------
-@app.get("/favicon.ico")
-def favicon():
-    return Response(status_code=204)
+    return {"message": "Backend running ✅"}

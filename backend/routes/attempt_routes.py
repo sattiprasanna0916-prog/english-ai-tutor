@@ -40,7 +40,7 @@ async def submit_attempt(
     wav_path = None
 
     # 🔐 Secure user from JWT
-    user_id = token_data.get("sub")
+    user_id = int(token_data.get("sub"))
     if not user_id or not get_user(user_id):
         raise HTTPException(status_code=401, detail="Invalid user")
 
