@@ -43,7 +43,7 @@ An AI-powered web application that helps users practice interview questions with
 ### 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/SpeakSmart-AI.git
+git clone git clone https://github.com/sattiprasanna0916-prog/SpeakSmart-AI-Interview-Coach.git
 cd SpeakSmart-AI
 ```
 
