@@ -97,87 +97,61 @@ def _lazy_load():
 # -------------------------
 def score_from_audio_transformer(audio_path: str, transcript: str) -> float:
 
-    # 🔥 LIGHTWEIGHT MODE (DEPLOYMENT)
+    # 🔥 LIGHTWEIGHT MODE
     if not USE_AI_MODEL:
         words = re.findall(r"[a-z']+", (transcript or "").lower())
         word_count = len(words)
 
         filler_count = sum(1 for w in words if w in FILLER_WORDS)
 
-        score =5.5
+        # -------------------------
+        # BASE SCORE (dynamic)
+        # -------------------------
+        score = 6.0
 
-        # length penalty
+        # -------------------------
+        # LENGTH IMPACT
+        # -------------------------
         if word_count < 5:
-            score -= 3
+            score -= 4
         elif word_count < 10:
-            score -=1.5
+            score -= 2
         elif word_count < 20:
-            score -= 0.5
-
-        # filler penalty
-        if filler_count > 5:
-            score -=2
-        elif filler_count > 2:
-            score -=1
-
-        return max(0, min(10, round(score, 2)))
-
-    # 🔥 FULL AI MODE (LOCAL ONLY)
-    try:
-        _lazy_load()
-
-        y, _ = librosa.load(audio_path, sr=16000, mono=True)
-
-        if y is None or len(y) == 0:
-            return 5.0
-
-        duration = len(y) / 16000
-
-        if _processor is None or _model is None:
-            base_score = 5.5
+            score -= 1
         else:
-            inputs = _processor(
-                y,
-                sampling_rate=16000,
-                return_tensors="pt",
-                padding=True
-            )
+            score += 1   # reward good length
 
-            with torch.no_grad():
-                raw_pred = _model(
-                    input_values=inputs["input_values"],
-                    attention_mask=inputs.get("attention_mask", None),
-                ).item()
-
-            base_score = float(np.clip(raw_pred, 3.0, 9.0))
-
-        words = re.findall(r"[a-z']+", transcript.lower())
-        word_count = len(words)
-        filler_count = sum(1 for w in words if w in FILLER_WORDS)
-
-        minutes = duration / 60 if duration > 0 else 1
-        wpm = word_count / minutes if minutes > 0 else 0
-
-        score = base_score
-
-        if word_count < 5:
-            score -= 2
-        elif word_count < 10:
-            score -= 1
-
+        # -------------------------
+        # FILLER PENALTY (stronger)
+        # -------------------------
         if filler_count > 6:
-            score -= 2
+            score -= 3
         elif filler_count > 3:
-            score -= 1
+            score -= 1.5
+        elif filler_count == 0:
+            score += 0.5  # reward clean speech
 
-        if wpm < 80 or wpm > 170:
-            score -= 1
+        # -------------------------
+        # REPETITION (flow issue)
+        # -------------------------
+        unique_ratio = len(set(words)) / max(1, word_count)
 
-        if duration < 2:
-            score -= 1
+        if unique_ratio < 0.5:
+            score -= 2
+        elif unique_ratio > 0.8:
+            score += 0.5
 
+        # -------------------------
+        # BASIC FLOW CHECK
+        # -------------------------
+        if word_count > 10:
+            connectors = {"and", "because", "so", "then", "but"}
+            if any(c in words for c in connectors):
+                score += 0.5
+            else:
+                score -= 0.5
+
+        # -------------------------
+        # CLAMP
+        # -------------------------
         return max(0, min(10, round(score, 2)))
-
-    except Exception as e:
-        logger.warning(f"Transformer scoring failed: {e}")
-        return 5.0

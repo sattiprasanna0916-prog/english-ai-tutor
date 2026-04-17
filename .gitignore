@@ -11,8 +11,5 @@ notebooks/
 # VS Code
 .vscode/
 
-# Dataset (optional)
-datasets/*.csv
-
 # System files
 .DS_Store

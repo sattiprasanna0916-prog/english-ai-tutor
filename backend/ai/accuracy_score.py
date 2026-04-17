@@ -9,7 +9,7 @@ def compute_accuracy_details(transcript: str, expected_text: str) -> dict:
 
     if not expected_text:
         return {
-            "score": 5.0,
+            "score": 0.0,
             "matched_keywords": [],
             "missing_keywords": [],
             "keyword_coverage": 0.0,
@@ -17,35 +17,20 @@ def compute_accuracy_details(transcript: str, expected_text: str) -> dict:
         }
 
     exp_words = list(set(re.findall(r"\w+", expected_text.lower())))
-
-    if not exp_words:
-        return {
-            "score": 5.0,
-            "matched_keywords": [],
-            "missing_keywords": [],
-            "keyword_coverage": 0.0,
-            "similarity": 0.0,
-        }
-
-    # -------------------------
-    # KEYWORD MATCHING (RELAXED)
-    # -------------------------
     transcript_words = set(words)
 
     matched = []
     missing = []
 
+    # -------------------------
+    # STRICTER KEYWORD MATCH
+    # -------------------------
     for kw in exp_words:
         found = False
 
         for w in transcript_words:
-        # exact match
-            if kw == w:
-                found = True
-                break
-        
-        # partial match (e.g. code vs coding)
-            if kw in w or w in kw:
+            # exact OR strong partial match only
+            if kw == w or (len(kw) > 4 and kw in w):
                 found = True
                 break
 
@@ -57,30 +42,38 @@ def compute_accuracy_details(transcript: str, expected_text: str) -> dict:
     coverage = len(matched) / max(1, len(exp_words))
 
     # -------------------------
-    # SIMILARITY (WEIGHT REDUCED)
+    # SIMILARITY
     # -------------------------
     sim = SequenceMatcher(None, t, expected_text.lower()).ratio()
 
     # -------------------------
-    # FINAL SCORE (BALANCED)
+    # WEIGHTED SCORE (STRONGER)
     # -------------------------
-    score = (0.5 * coverage + 0.5* sim) * 10
+    score = (0.7 * coverage + 0.3 * sim) * 10
 
     # -------------------------
-    # LENGTH PENALTY (SOFT)
+    # HARD LENGTH PENALTY
     # -------------------------
     if wc < 5:
-        score -= 2
+        score -= 4
     elif wc < 10:
+        score -= 2
+    elif wc < 20:
         score -= 1
 
     # -------------------------
-    # LOW COVERAGE PENALTY (SOFT)
+    # LOW COVERAGE PENALTY
     # -------------------------
     if coverage < 0.2:
-        score -= 1.5
+        score -= 3
     elif coverage < 0.4:
-        score -= 0.5
+        score -= 1.5
+
+    # -------------------------
+    # VERY LOW SIMILARITY PENALTY
+    # -------------------------
+    if sim < 0.2:
+        score -= 2
 
     # -------------------------
     # CLAMP
