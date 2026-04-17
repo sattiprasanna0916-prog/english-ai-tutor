@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SpeakSmart • Login</title>
   <link rel="stylesheet" href="styles.css" />
-
+  <link rel="stylesheet" href="responsive.css">
   <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -53,7 +53,7 @@
         <label>Branch</label>
         <input type="text" id="regBranch" placeholder="CSE / IT" required/>
 
-        <button class="btn primary full glow" onclick="handleRegister()">
+        <button id="registerBtn" class="btn primary full glow" onclick="handleRegister()">
           Create Account →
         </button>
 
@@ -65,7 +65,7 @@
         <label>Email</label>
         <input type="email" id="loginEmail" placeholder="you@example.com" required/>
 
-        <button class="btn full glow" onclick="handleLogin()">
+        <button id="loginBtn" class="btn full glow" onclick="handleLogin()">
           Continue →
         </button>
 
@@ -77,6 +77,14 @@
 
   <!-- SCRIPT -->
   <script>
+    // 🔐 Auto-redirect if already logged in
+    window.addEventListener("DOMContentLoaded", () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        window.location.href = "home.html";
+      }
+    });
+
     function switchTab(type){
       document.getElementById("registerForm").classList.remove("active");
       document.getElementById("loginForm").classList.remove("active");
@@ -92,37 +100,49 @@
       }
     }
 
-    function handleRegister(){
+    async function handleRegister(){
       const email = document.getElementById("regEmail").value.trim();
       const branch = document.getElementById("regBranch").value.trim();
+      const btn = document.getElementById("registerBtn");
 
       if(!email || !branch){
         alert("Please fill all fields");
         return;
       }
 
-      if (typeof registerUser === "function") {
-        registerUser(email, branch);
-      } else {
-        console.error("registerUser not loaded");
-        alert("App not loaded properly");
+      btn.innerText = "Creating...";
+      btn.disabled = true;
+
+      try {
+        await registerUser(email, branch); // uses fixed app.js
+      } catch (err) {
+        alert("Registration failed");
       }
+
+      btn.innerText = "Create Account →";
+      btn.disabled = false;
     }
 
-    function handleLogin(){
+    async function handleLogin(){
       const email = document.getElementById("loginEmail").value.trim();
+      const btn = document.getElementById("loginBtn");
 
       if(!email){
         alert("Please enter email");
         return;
       }
 
-      if (typeof loginUser === "function") {
-        loginUser(email);
-      } else {
-        console.error("loginUser not loaded");
-        alert("App not loaded properly");
+      btn.innerText = "Logging in...";
+      btn.disabled = true;
+
+      try {
+        await loginUser(email); // uses fixed app.js
+      } catch (err) {
+        alert("Login failed");
       }
+
+      btn.innerText = "Continue →";
+      btn.disabled = false;
     }
   </script>
 

@@ -1,5 +1,5 @@
 /* =========================
-   🎨 GLOBAL DESIGN SYSTEM
+   🎨 DESIGN SYSTEM
 ========================= */
 :root{
   --bg:#020617;
@@ -30,19 +30,16 @@ body{
 }
 
 /* =========================
-   🧭 NAVBAR (UNIFIED)
+   🧭 NAVBAR
 ========================= */
 .topbar{
   display:flex;
   justify-content:space-between;
   align-items:center;
   padding:16px 28px;
-  backdrop-filter: blur(12px);
-  background:rgba(2,6,23,0.6);
+  background:rgba(20,25,40,0.8);
+  backdrop-filter:blur(10px);
   border-bottom:1px solid var(--border);
-  position:sticky;
-  top:0;
-  z-index:100;
 }
 
 .brand{
@@ -62,16 +59,11 @@ body{
   font-weight:900;
 }
 
-.brandTitle{
-  font-weight:800;
-}
-
 .brandSub{
   font-size:12px;
   color:var(--muted);
 }
 
-/* NAV BUTTONS */
 .navRight{
   display:flex;
   gap:12px;
@@ -88,11 +80,13 @@ body{
   color:var(--text);
   cursor:pointer;
   font-weight:600;
-  transition:0.3s;
+  transition:0.2s;
+  text-decoration:none;
 }
 
 .btn:hover{
   transform:translateY(-2px);
+  box-shadow:0 0 10px rgba(99,102,241,0.3);
 }
 
 .btn.primary{
@@ -102,43 +96,18 @@ body{
 }
 
 .btn.ghost{
-  background:transparent;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
 }
+.btn.danger{background:rgba(239,68,68,0.15);color:#ef4444;}
+.btn.success{background:#22c55e;color:white;}
+.btn.warning{background:#f59e0b;color:white;}
+.btn.record{background:#2563eb;}
+.btn.stop{background:#ef4444;}
 
-.btn.glow{
-  box-shadow:0 0 20px rgba(99,102,241,0.4);
-}
-
-.btn.danger{
-  background:rgba(239,68,68,0.15);
-  color:#ef4444;
-}
-
-.btn.success{
-  background:#16a34a;
-  color:white;
-}
-
-.btn.record{
-  background:#2563eb;
-}
-
-.btn.stop{
-  background:#334155;
-}
-
-.btn.warning{
-  background:#f59e0b;
-}
-
-.btn.full{
-  width:100%;
-}
-
-.btn.large{
-  padding:14px 22px;
-  font-size:16px;
-}
+.btn.full{width:100%;}
+.btn.large{padding:14px 22px;font-size:16px;}
 
 /* =========================
    📦 LAYOUT
@@ -151,25 +120,19 @@ body{
 
 .mt12{margin-top:12px;}
 
-.stack{
-  display:flex;
-  flex-direction:column;
-  gap:16px;
-}
-
 /* =========================
-   💎 CARDS (GLASS)
+   💎 CARDS
 ========================= */
 .card{
   background:var(--card);
   border:1px solid var(--border);
   border-radius:var(--radius);
   padding:20px;
-  backdrop-filter: blur(12px);
+  backdrop-filter:blur(12px);
+  box-shadow:0 10px 25px rgba(0,0,0,0.3);
 }
 
 .glass{
-  backdrop-filter: blur(14px);
   background:var(--glass);
 }
 
@@ -194,20 +157,18 @@ body{
 }
 
 .gradientText{
-  background:linear-gradient(90deg,#6366f1,#22c55e);
-  -webkit-background-clip:text;
-  background-clip: text; 
-  -webkit-text-fill-color:transparent;
-}
+  background: linear-gradient(90deg,#6366f1,#22c55e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 
+  display: inline-block;
+}
 .heroDescBig{
   margin:20px auto;
   max-width:600px;
   color:var(--muted);
-}
-
-.heroButtons{
-  margin-top:20px;
 }
 
 /* =========================
@@ -225,18 +186,12 @@ body{
   border-radius:16px;
   background:var(--card);
   border:1px solid var(--border);
-  transition:0.3s;
   text-align:center;
+  transition:0.2s;
 }
 
 .featureCard:hover{
-  transform:translateY(-6px);
-  box-shadow:0 0 30px rgba(99,102,241,0.2);
-}
-
-.featureIcon{
-  font-size:28px;
-  margin-bottom:10px;
+  transform:translateY(-5px);
 }
 
 /* =========================
@@ -248,47 +203,81 @@ body{
   gap:14px;
 }
 
-
-
 /* =========================
-   🎤 CHAT + RECORD
+   🎤 PRACTICE
 ========================= */
+.practiceGrid{
+  display:grid;
+  grid-template-columns:1.2fr 0.8fr 1fr;
+  gap:20px;
+}
+
 .chatBox{
-  height:200px;
-  overflow:auto;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  max-height:500px;
+  overflow-y:auto;
 }
 
 .chat-msg{
-  max-width: 80%;
-  padding: 12px 16px;
-  border-radius: 12px;
-  margin-bottom: 10px;
-  line-height: 1.5;
-  word-wrap: break-word;
+  padding:12px 16px;
+  border-radius:12px;
+  max-width:80%;
 }
 
 .chat-msg.ai{
   background:#1e293b;
 }
 
-.status{
-  margin-top:10px;
-  color:#38bdf8;
+.chat-msg.user{
+  background:linear-gradient(135deg,#6366f1,#22c55e);
+  color:white;
+  margin-left:auto;
 }
 
-/* BUTTON GROUPS */
-.btnRow{
+.micBox{
   display:flex;
+  flex-direction:column;
+  align-items:center;
   gap:10px;
 }
 
-.btnRow.center{
+.micCircle{
+  width:80px;
+  height:80px;
+  border-radius:50%;
+  background:#1e293b;
+}
+
+.micCircle.active{
+  background:#22c55e;
+}
+
+.controlGroup{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
   justify-content:center;
 }
 
+.aiPanel{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  max-height:75vh;
+  overflow-y:auto;
+}
+
 /* =========================
-   📈 ANALYTICS
+   📊 ANALYTICS
 ========================= */
+.analyticsGrid{
+  display:grid;
+  grid-template-columns:1.5fr 1fr;
+  gap:20px;
+}
+
 .tile{
   padding:16px;
   border-radius:14px;
@@ -301,21 +290,11 @@ body{
   font-weight:800;
 }
 
-.highlight{
-  border:1px solid #f97316;
-}
-
-.chartCard{
-  height:300px;
-}
-
-/* SKILLS */
 .skill{
   margin-top:16px;
 }
 
 .bar{
-  width:100%;
   height:10px;
   background:#1e293b;
   border-radius:10px;
@@ -326,58 +305,11 @@ body{
   height:100%;
   width:0%;
   background:linear-gradient(90deg,#6366f1,#22c55e);
-  transition: width 0.8s ease-in-out;
 }
 
 /* =========================
-   📊 SCORE PANEL
+   🔐 AUTH
 ========================= */
-.scoreGrid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:12px;
-}
-
-.scoreCard{
-  padding:14px;
-  border-radius:12px;
-  background:#0f172a;
-  text-align:center;
-}
-
-.finalScore{
-  grid-column:span 2;
-}
-
-.improvementCard{
-  grid-column:span 2;
-}
-
-/* =========================
-   📱 RESPONSIVE
-========================= */
-@media(max-width:900px){
-  .featureGrid{
-    grid-template-columns:1fr;
-  }
-
-  .grid4{
-    grid-template-columns:1fr 1fr;
-  }
-
-  
-  .heroTitleBig{
-    font-size:34px;
-  }
-}
-.btn{
-  text-decoration: none;
-  display: inline-block;
-}
-/* =========================
-   🔐 AUTH FIX (IMPORTANT)
-========================= */
-
 .auth-container{
   display:flex;
   justify-content:center;
@@ -389,13 +321,8 @@ body{
   width:100%;
   max-width:420px;
   padding:30px;
-  border-radius:20px;
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.08);
-  backdrop-filter:blur(12px);
 }
 
-/* FORM FIX */
 .auth-form{
   display:none;
   flex-direction:column;
@@ -406,21 +333,17 @@ body{
   display:flex;
 }
 
-/* INPUT FIX */
 .auth-form input{
-  width:100%;
   padding:12px;
   border-radius:10px;
-  border:1px solid rgba(255,255,255,0.1);
   background:#020617;
+  border:1px solid var(--border);
   color:white;
 }
 
-/* TAB FIX */
 .auth-tabs{
   display:flex;
   margin:20px 0;
-  background:#020617;
   border-radius:12px;
   overflow:hidden;
 }
@@ -428,550 +351,12 @@ body{
 .tab{
   flex:1;
   padding:10px;
-  border:none;
-  background:transparent;
+  background:#020617;
   color:#94a3b8;
   cursor:pointer;
-  font-weight:700;
 }
 
 .tab.active{
   background:linear-gradient(135deg,#6366f1,#22c55e);
   color:white;
-}
-/* =========================
-   📊 ANALYTICS GRID (SIDE BY SIDE)
-========================= */
-
-.analyticsGrid{
-  display:grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap:20px;
-  align-items:stretch;
-}
-
-.analyticsGrid .card{
-  height:100%;
-}
-
-/* FIX CHART HEIGHT */
-.chartCard{
-  height:320px;
-  padding:24px;
-}
-
-.card:hover{
-  transform: translateY(-4px);
-  transition: 0.3s;
-}
-/* DEFAULT BAR */
-
-
-/* WEAK SKILL HIGHLIGHT */
-
-.bar.weak > div{
-  background: linear-gradient(90deg,#ef4444,#f97316) !important;
-  box-shadow: 0 0 12px rgba(239,68,68,0.7);
-}
-/* RESPONSIVE */
-@media(max-width:900px){
-  .analyticsGrid{
-    grid-template-columns:1fr;
-  }
-}
-.bar{
-  height:14px;
-}
-#weakSkill{
-  color:#f97316;
-  font-weight:800;
-}
-
-.tile:has(#weakSkill){
-  border:1px solid rgba(249,115,22,0.4);
-  box-shadow: 0 0 10px rgba(249,115,22,0.2);
-}
-.skill{
-  margin-bottom: 18px;
-}
-.btn.record{
-  background: linear-gradient(90deg,#6366f1,#22c55e);
-}
-
-.btn.stop{
-  background: #ef4444;
-}
-
-.btn.success{
-  background: #22c55e;
-}
-
-.btn.warning{
-  background: #f59e0b;
-}
-#startBtn.recording{
-  box-shadow: 0 0 15px rgba(34,197,94,0.7);
-}
-.feedbackCard{
-  background: rgba(255,255,255,0.03);
-  padding: 12px;
-  border-radius: 12px;
-}
-
-.questionBox{
-  background: rgba(255,255,255,0.05);
-  padding:12px;
-  border-radius:10px;
-  margin-bottom:10px;
-  font-weight:600;
-}
-.answerBox{
-  background: rgba(255,255,255,0.03);
-  padding:12px;
-  border-radius:10px;
-  min-height:80px;
-}
-.feedbackCard ul{
-  padding-left: 16px;
-}
-
-.feedbackCard li{
-  margin-bottom: 8px;
-  line-height: 1.5;
-}
-
-.recording{
-  box-shadow: 0 0 15px rgba(34,197,94,0.7);
-}
-.btn.success{
-  font-size: 16px;
-  padding: 12px 18px;
-}
-/* =========================
-   🚀 PRACTICE PAGE UPGRADE
-========================= */
-
-/* 🎤 MIC VISUAL */
-.micBox{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  margin:20px 0;
-}
-
-.micCircle{
-  width:70px;
-  height:70px;
-  border-radius:50%;
-  background:#1e293b;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  transition:0.3s;
-}
-
-.micCircle.active{
-  background:#22c55e;
-  box-shadow:0 0 25px rgba(34,197,94,0.8);
-}
-
-/* 💬 CHAT IMPROVEMENT */
-.chat-msg.ai{
-  background:linear-gradient(135deg,#1e293b,#0f172a);
-  border-left:3px solid #60a5fa;
-}
-
-.chat-msg.user{
-  background:linear-gradient(135deg,#1f2937,#111827);
-  border-right:3px solid #22c55e;
-  text-align:right;
-}
-
-/* 📦 CARD DEPTH */
-.card{
-  box-shadow:0 10px 30px rgba(0,0,0,0.4);
-}
-
-/* 🎛️ CONTROL GROUP ALIGN */
-
-
-/* 📊 SCORE CARDS GLOW */
-.scoreCard{
-  transition:0.3s;
-}
-
-.scoreCard:hover{
-  transform:translateY(-3px);
-  box-shadow:0 0 15px rgba(99,102,241,0.3);
-}
-
-/* 🤖 AI PANEL ENHANCE */
-.aiPanel{
-  background:rgba(15,23,42,0.6);
-  backdrop-filter:blur(16px);
-}
-
-/* 📁 FILE INPUT STYLE */
-.fileInput{
-  padding:8px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,0.1);
-  background:#020617;
-  color:white;
-  width:100%;
-}
-
-/* 🎯 STATUS TEXT IMPROVE */
-.status{
-  font-weight:600;
-  margin-top:8px;
-}
-
-/* ✨ BUTTON HOVER IMPROVE */
-.btn:hover{
-  box-shadow:0 0 12px rgba(99,102,241,0.4);
-}
-
-/* 🎤 RECORDING GLOW */
-#startBtn.recording{
-  background:#22c55e;
-  box-shadow:0 0 20px rgba(34,197,94,0.8);
-}
-
-/* 🔁 RETRY BUTTON SPECIAL */
-#retryBtn{
-  width:100%;
-  font-weight:700;
-}
-
-/* 🧠 SMOOTH TRANSITIONS */
-*{
-  transition:all 0.2s ease;
-}
-.threeCol{
-  display:grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap:20px;
-}
-.timer{
-  margin-top:6px;
-  font-size:14px;
-  color:#94a3b8;
-  font-weight:600;
-}
-.chat-msg.ai{
-  position: relative;
-}
-.feedbackCard li{
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
-.tile{
-  transition:0.3s;
-}
-
-.tile:hover{
-  transform:translateY(-3px);
-  box-shadow:0 0 15px rgba(99,102,241,0.3);
-}
-
-.skill span{
-  font-size:14px;
-  color:#94a3b8;
-}
-/* 🔥 MIC ANIMATION */
-.micCircle.active {
-  animation: pulse 1s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 0.6; }
-  50% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(1); opacity: 0.6; }
-}
-
-/* 📊 PROGRESS BAR */
-.progressBar {
-  height: 6px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 10px;
-  margin: 10px 0;
-  overflow: hidden;
-}
-
-#progressFill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #60a5fa, #22c55e);
-  transition: width 0.3s ease;
-}
-
-/* 💬 EMPTY CHAT */
-.chat-empty {
-  text-align: center;
-  color: #aaa;
-  margin-top: 40px;
-}
-.practiceGrid.threeCol {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1.2fr;
-  gap: 20px;
-}
-.chatBox {
-  max-height: 500px;
-  overflow-y: auto;
-}
-
-.chat-msg.user {
-  margin-left: auto;
-  background: linear-gradient(90deg, #60a5fa, #22c55e);
-  color: white;
-}
-.topbar {
-  background: rgba(20, 25, 40, 0.8);
-  backdrop-filter: blur(8px);
-}
-
-.micBox {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-/* ===== PRACTICE PAGE 3-COLUMN FIX ===== */
-
-.practiceGrid {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr 1fr;
-  gap: 20px;
-  align-items: stretch;
-}
-
-/* LEFT - CHAT */
-.chatPanel {
-  display: flex;
-  flex-direction: column;
-  height: auto !important;
-}
-
-.chatBox {
-  flex: 1;
-  overflow-y: auto;
-  margin-top: 12px;
-  padding-right: 6px;
-}
-
-/* CENTER - MIC (FOCUS AREA) */
-.micPanel {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  text-align: center;
-}
-
-.micBox {
-  margin-top: 20px;
-}
-
-/* RIGHT - AI PANEL */
-.aiPanel {
-  height: 75vh;
-  overflow-y: auto;
-}
-
-/* SCROLL FIX */
-
-
-.aiPanel::-webkit-scrollbar-thumb,
-.chatBox::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.2);
-  border-radius: 10px;
-}
-
-/* BETTER SPACING */
-.scoreGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-/* HIGHLIGHT FINAL SCORE */
-.finalScore {
-  grid-column: span 2;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: white;
-}
-
-/* BUTTON GROUP */
-
-
-/* MOBILE RESPONSIVE */
-@media (max-width: 900px) {
-  
-  .chatPanel, .aiPanel {
-    height: auto !important;;
-  }
-}
-.chat-msg.ai {
-  background: rgba(96,165,250,0.15);
-  align-self: flex-start;
-}
-
-.chat-msg.user {
-  background: linear-gradient(135deg,#6366f1,#22c55e);
-  color: white;
-  align-self: flex-end;
-}
-.micCircle {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.1);
-  margin: auto;
-  transition: 0.3s;
-}
-
-.micCircle.active {
-  background: linear-gradient(135deg,#6366f1,#22c55e);
-  box-shadow: 0 0 20px rgba(99,102,241,0.5);
-}
-
-.controlGroup {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  margin-top:10px;
-}
-.aiPanel {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-height:75vh;
-  overflow-y: auto;
-  padding-right: 6px;
-}
-
-.scoreCard {
-  padding: 14px;
-  border-radius: 12px;
-}
-.chatBox {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.finalScore {
-  font-size: 20px;
-  font-weight: bold;
-  text-align: center;
-}
-.feedbackCard {
-  margin-top: 12px;
-  line-height: 1.6;
-}
-
-.feedbackCard li {
-  margin-bottom: 8px;
-}
-
-.improvedAnswerBox {
-  margin-top: 16px;
-  line-height: 1.6;
-}
-#stopBtn, #analyzeBtn, #nextBtn {
-  display: none;
-}
-/* =========================
-   📱 MOBILE PERFECT FIX
-========================= */
-
-@media (max-width: 768px) {
-
-  /* STACK EVERYTHING */
-  .practiceGrid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .threeCol {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* REMOVE FIXED HEIGHTS */
-  .chatPanel,
-  .aiPanel {
-    height: auto !important;
-    max-height: none !important;
-  }
-
-  /* IMPROVE SPACING */
-  .container {
-    padding: 15px 10px;
-  }
-
-  /* BUTTON FULL WIDTH */
-  .btn {
-    width: 100%;
-  }
-
-  /* TEXT SIZE */
-  .heroTitleBig {
-    font-size: 26px;
-  }
-
-  /* GRID FIX */
-  .featureGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .grid4 {
-    grid-template-columns: 1fr;
-  }
-
-  /* CHAT FIX */
-  .chatBox {
-    max-height: 300px;
-  }
-}
-/* ===== FINAL MOBILE POLISH ===== */
-@media (max-width: 768px){
-
-  /* NAVBAR FIX */
-  .topbar{
-    flex-direction: column;
-    align-items: flex-start;
-    gap:10px;
-  }
-
-  .navRight{
-    width:100%;
-    justify-content: space-between;
-  }
-
-  /* REMOVE HEIGHT ISSUES */
-  .aiPanel{
-    height:auto !important;
-    max-height:none !important;
-  }
-
-  /* AUTH CENTER FIX */
-  .auth-container{
-    padding:20px 10px;
-  }
-
-  .auth-card{
-    width:100%;
-  }
-
-}
-.practiceGrid,
-.analyticsGrid {
-  grid-template-columns: 1fr !important;
-}
-.aiPanel {
-  height: auto !important;
-}
-.topbar {
-  flex-direction: column;
 }

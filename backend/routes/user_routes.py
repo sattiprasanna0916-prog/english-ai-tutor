@@ -7,11 +7,13 @@ from backend.services.user_service import (
     get_user_by_email,
 )
 
+from backend.services.auth_service import create_access_token
+
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
 # -----------------------------
-# Request Model
+# MODELS
 # -----------------------------
 class UserRegisterRequest(BaseModel):
     email: EmailStr
@@ -19,8 +21,12 @@ class UserRegisterRequest(BaseModel):
     current_level: str = Field(default="Beginner")
 
 
+class LoginRequest(BaseModel):
+    email: EmailStr
+
+
 # -----------------------------
-# REGISTER (or return existing)
+# REGISTER
 # -----------------------------
 @router.post("/register")
 def register_user_route(payload: UserRegisterRequest):
@@ -29,36 +35,43 @@ def register_user_route(payload: UserRegisterRequest):
         branch=payload.branch,
         current_level=payload.current_level
     )
-    return user
-
-
-# -----------------------------
-# LOGIN (BETTER THAN URL EMAIL)
-# -----------------------------
-from backend.services.auth_service import create_access_token
-
-@router.post("/login")
-def login_user(email: EmailStr = Body(...)):
-    user = get_user_by_email(email)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    token = create_access_token({"user_id": user["user_id"]})
 
     return {
-        "access_token": token,
         "user": user
     }
 
 
 # -----------------------------
-# GET USER BY EMAIL (OPTIONAL)
+# LOGIN (TOKEN GENERATION)
 # -----------------------------
-@router.get("/by-email/{email}")
-def get_user_by_email_route(email: str):
-    user = get_user_by_email(email)
+@router.post("/login")
+def login_user(payload: LoginRequest):
+    user = get_user_by_email(payload.email)
+
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    token = create_access_token({
+        "sub": str(user["user_id"])   # ✅ FIXED
+    })
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": user
+    }
+
+
+# -----------------------------
+# GET USER BY EMAIL
+# -----------------------------
+@router.post("/by-email")
+def get_user_by_email_route(email: EmailStr = Body(...)):
+    user = get_user_by_email(email)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
     return user
 
 
@@ -68,6 +81,8 @@ def get_user_by_email_route(email: str):
 @router.get("/{user_id}")
 def get_user_route(user_id: int):
     user = get_user(user_id)
+
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
     return user

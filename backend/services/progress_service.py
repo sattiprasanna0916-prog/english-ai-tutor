@@ -1,11 +1,5 @@
-# backend/services/progress_service.py
-
-import pandas as pd
-from pathlib import Path
-from datetime import datetime,timedelta
-
-USERS_PATH = Path(__file__).resolve().parents[2] / "datasets" / "users.csv"
-ATTEMPTS_PATH = Path(__file__).resolve().parents[2] / "datasets" / "attempts.csv"
+from backend.db import get_connection
+from datetime import datetime, timedelta
 
 
 # -------------------------
@@ -23,53 +17,57 @@ def _normalize_level(level: str) -> str:
 
 
 # -------------------------
-# GET CURRENT LEVEL
+# GET CURRENT LEVEL (SQL)
 # -------------------------
 def get_current_level(user_id: int) -> str:
-    if not USERS_PATH.exists():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT current_level FROM users WHERE user_id = ?", (user_id,))
+    row = cur.fetchone()
+
+    conn.close()
+
+    if not row:
         return "Beginner"
 
-    df = pd.read_csv(USERS_PATH)
-    if df.empty:
-        return "Beginner"
-
-    df["user_id"] = pd.to_numeric(df["user_id"], errors="coerce")
-    row = df[df["user_id"] == int(user_id)]
-
-    if row.empty:
-        return "Beginner"
-
-    return _normalize_level(row.iloc[0].get("current_level", "Beginner"))
+    return _normalize_level(row["current_level"])
 
 
 # -------------------------
-# LOAD ATTEMPTS
+# LOAD ATTEMPTS (SQL)
 # -------------------------
 def _load_attempts(user_id: int):
-    if not ATTEMPTS_PATH.exists():
-        return pd.DataFrame()
+    conn = get_connection()
+    cur = conn.cursor()
 
-    df = pd.read_csv(ATTEMPTS_PATH)
-    if df.empty:
-        return df
+    cur.execute("""
+        SELECT *
+        FROM attempts
+        WHERE user_id = ?
+        ORDER BY created_at
+    """, (user_id,))
 
-    df["user_id"] = pd.to_numeric(df["user_id"], errors="coerce")
-    df = df[df["user_id"] == int(user_id)]
+    rows = cur.fetchall()
+    conn.close()
 
-    return df
+    return [dict(r) for r in rows]
 
 
 # -------------------------
 # STREAK CALCULATION
 # -------------------------
-def _calc_streak_days(df: pd.DataFrame) -> int:
-    if df.empty or "created_at" not in df.columns:
+def _calc_streak_days(rows):
+    if not rows:
         return 0
 
     try:
-        dates = pd.to_datetime(df["created_at"], errors="coerce").dt.date
-        unique_dates = sorted(set(d for d in dates if d is not None))
+        dates = [
+            datetime.fromisoformat(r["created_at"]).date()
+            for r in rows if r.get("created_at")
+        ]
 
+        unique_dates = sorted(set(dates))
         if not unique_dates:
             return 0
 
@@ -89,14 +87,16 @@ def _calc_streak_days(df: pd.DataFrame) -> int:
     except Exception as e:
         print("STREAK ERROR:", e)
         return 0
+
+
 # -------------------------
 # MAIN PROGRESS FUNCTION
 # -------------------------
 def compute_progress(user_id: int):
     current_level = get_current_level(user_id)
-    df = _load_attempts(user_id)
+    rows = _load_attempts(user_id)
 
-    if df.empty:
+    if not rows:
         return {
             "current_level": current_level,
             "total_attempts": 0,
@@ -111,18 +111,15 @@ def compute_progress(user_id: int):
         }
 
     # -------------------------
-    # Convert numeric safely
+    # Extract values
     # -------------------------
-    for col in ["fluency_score", "grammar_score", "accuracy_score"]:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
+    flu = [r.get("fluency_score", 0) or 0 for r in rows]
+    gra = [r.get("grammar_score", 0) or 0 for r in rows]
+    acc = [r.get("accuracy_score", 0) or 0 for r in rows]
 
-    # -------------------------
-    # Averages
-    # -------------------------
-    avg_flu = df["fluency_score"].mean()
-    avg_gra = df["grammar_score"].mean()
-    avg_acc = df["accuracy_score"].mean()
+    avg_flu = sum(flu) / len(flu)
+    avg_gra = sum(gra) / len(gra)
+    avg_acc = sum(acc) / len(acc)
 
     avg_final = (avg_flu + avg_gra + avg_acc) / 3
 
@@ -135,38 +132,39 @@ def compute_progress(user_id: int):
         "Accuracy": avg_acc
     }
 
-    weakest_skill = min(skills, key=lambda k: skills[k] if skills[k] > 0 else 999)
+    weakest_skill = min(skills, key=skills.get)
 
     # -------------------------
     # Streak
     # -------------------------
-    streak_days = _calc_streak_days(df)
+    streak_days = _calc_streak_days(rows)
 
     # -------------------------
-    # Chart data (last 5 attempts)
+    # Chart data (last 10)
     # -------------------------
-    if "created_at" in df.columns:
-        df = df.sort_values("created_at")
-        df = df.fillna(0)
-        last = df.tail(10)
+    last = rows[-10:]
 
-        history_labels = last["created_at"].astype(str).str.slice(5, 10).tolist()
+    history_labels = [
+        r["created_at"][5:10] if r.get("created_at") else ""
+        for r in last
+    ]
 
-        history_scores = (
-            (last["fluency_score"] +
-             last["grammar_score"] +
-             last["accuracy_score"]) / 3
-        ).round(2).tolist()
-    else:
-        history_labels = []
-        history_scores = []
+    history_scores = [
+        round(
+            (r.get("fluency_score", 0) +
+             r.get("grammar_score", 0) +
+             r.get("accuracy_score", 0)) / 3,
+            2
+        )
+        for r in last
+    ]
 
     # -------------------------
     # FINAL RESPONSE
     # -------------------------
     return {
         "current_level": current_level,
-        "total_attempts": len(df),
+        "total_attempts": len(rows),
 
         "avg_fluency": round(avg_flu, 2),
         "avg_grammar": round(avg_gra, 2),

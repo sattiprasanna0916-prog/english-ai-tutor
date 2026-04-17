@@ -1,8 +1,9 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
 import tempfile
 import os
-from fastapi import Depends
+
 from backend.services.auth_service import verify_token
+
 # AI
 from backend.ai.audio_convert import ensure_wav_16k_mono
 from backend.ai.transformer_scorer import score_from_audio_transformer
@@ -19,10 +20,17 @@ from backend.services.evaluation_service import evaluate_and_update_level
 
 router = APIRouter(prefix="/attempts", tags=["Attempts"])
 
+# 🔧 CONFIG
+ALLOWED_EXTENSIONS = {".wav", ".mp3", ".m4a", ".webm"}
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+
+FLUENCY_WEIGHT = 0.3
+GRAMMAR_WEIGHT = 0.3
+ACCURACY_WEIGHT = 0.4
+
 
 @router.post("/submit")
 async def submit_attempt(
-    user_id: int = Form(...),
     level: str = Form(...),
     question: str = Form(...),
     audio: UploadFile = File(...),
@@ -30,36 +38,38 @@ async def submit_attempt(
 ):
     tmp_path = None
     wav_path = None
-    if not get_user(user_id):
-        return {"error": "Invalid user"}
+
+    # 🔐 Secure user from JWT
+    user_id = token_data.get("sub")
+    if not user_id or not get_user(user_id):
+        raise HTTPException(status_code=401, detail="Invalid user")
+
     try:
         # -----------------------------
-# 🔒 AUDIO VALIDATION
-# -----------------------------
-        allowed_ext = [".wav", ".mp3", ".m4a", ".webm"]
-
+        # 🔒 AUDIO VALIDATION
+        # -----------------------------
         filename = (audio.filename or "").lower()
         ext = os.path.splitext(filename)[-1]
 
-        if ext not in allowed_ext:
-            return {"error": "❌ Unsupported audio format"}
+        if ext not in ALLOWED_EXTENSIONS:
+            raise HTTPException(status_code=400, detail="Unsupported audio format")
 
-# size limit (e.g. 10MB)
         content = await audio.read()
 
-        if len(content) > 10 * 1024 * 1024:
-            return {"error": "❌ File too large (max 10MB)"}
+        if len(content) > MAX_FILE_SIZE:
+            raise HTTPException(status_code=400, detail="File too large (max 10MB)")
+
         # -----------------------------
-        # 1️⃣ SAVE TEMP FILE (ANY FORMAT)
+        # 1️⃣ SAVE TEMP FILE
         # -----------------------------
-        suffix = os.path.splitext(audio.filename or "")[-1] or ".wav"
+        suffix = ext if ext else ".wav"
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
             tmp.write(content)
             tmp_path = tmp.name
 
         # -----------------------------
-        # 2️⃣ CONVERT TO WAV (FIX ERROR)
+        # 2️⃣ CONVERT TO WAV
         # -----------------------------
         wav_path = ensure_wav_16k_mono(tmp_path)
 
@@ -69,37 +79,45 @@ async def submit_attempt(
         transcript = (transcribe_audio(wav_path) or "").strip()
 
         if not transcript or transcript.lower() in ["no speech detected", "silence"]:
-            return {
-                "error": "❌ No clear speech detected. Please speak clearly.",
-                "transcript": "",
-            }
+            raise HTTPException(
+                status_code=400,
+                detail="No clear speech detected. Please speak clearly."
+            )
 
         # -----------------------------
-        # 4️⃣ SCORES
+        # 4️⃣ SCORING PIPELINE
         # -----------------------------
-        fluency = float(score_from_audio_transformer(wav_path, transcript))
-        grammar = float(compute_grammar_score(transcript))
+        try:
+            fluency = float(score_from_audio_transformer(wav_path, transcript))
+            grammar = float(compute_grammar_score(transcript))
 
-        acc_details = compute_accuracy_details(transcript, question)
-        accuracy = float(acc_details.get("score", 0))
+            acc_details = compute_accuracy_details(transcript, question)
+            accuracy = float(acc_details.get("score", 0))
 
-        metrics = compute_audio_metrics(wav_path, transcript)
+            metrics = compute_audio_metrics(wav_path, transcript)
 
-        # Optional: reject too short audio
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Processing error: {str(e)}"
+            )
+
+        # Reject too short audio
         if float(metrics.get("audio_duration", 0)) < 2.5:
-            return {
-                "error": "❌ Audio too short. Please speak at least 3 seconds.",
-            }
+            raise HTTPException(
+                status_code=400,
+                detail="Audio too short. Minimum 3 seconds required."
+            )
 
         # -----------------------------
         # 5️⃣ FINAL SCORE
         # -----------------------------
         final_score = round(
-    0.3 * fluency +
-    0.3 * grammar +
-    0.4 * accuracy,
-    2
-)
+            FLUENCY_WEIGHT * fluency +
+            GRAMMAR_WEIGHT * grammar +
+            ACCURACY_WEIGHT * accuracy,
+            2
+        )
 
         # -----------------------------
         # 6️⃣ FEEDBACK (LLM)
@@ -115,18 +133,24 @@ async def submit_attempt(
 
         feedback = fb.get("feedback", "")
         improved_answer = fb.get("improved_answer", "")
+
+        # -----------------------------
+        # 7️⃣ IMPROVEMENT TRACKING
+        # -----------------------------
         previous_attempts = get_user_attempts(user_id)
 
         previous_score = None
         if previous_attempts:
-            previous_score = previous_attempts[0].get("final_score", None)
+            previous_score = previous_attempts[0].get("final_score")
+
         improvement = 0
         if previous_score is not None:
             improvement = round(final_score - float(previous_score), 2)
+
         # -----------------------------
-        # 7️⃣ SAVE ATTEMPT
+        # 8️⃣ SAVE ATTEMPT
         # -----------------------------
-        saved = save_attempt(
+        save_attempt(
             user_id=user_id,
             level=level,
             question=question,
@@ -144,29 +168,25 @@ async def submit_attempt(
         )
 
         # -----------------------------
-        # 8️⃣ LEVEL UPDATE
+        # 9️⃣ LEVEL UPDATE
         # -----------------------------
         level_update = evaluate_and_update_level(user_id)
 
         # -----------------------------
-        # 9️⃣ RESPONSE
+        # 🔟 RESPONSE
         # -----------------------------
         return {
-    "transcript": transcript,
-
-    # ✅ flatten structure (frontend expects this)
-    "fluency": round(fluency, 2),
-    "grammar": round(grammar, 2),
-    "accuracy": round(accuracy, 2),
-    "final_score": final_score,
-    "improvement": improvement, 
-    "feedback": feedback,
-    "improved_answer": improved_answer,
-
-    # optional extras
-    "audio_metrics": metrics,
-    "level_update": level_update,
-}
+            "transcript": transcript,
+            "fluency": round(fluency, 2),
+            "grammar": round(grammar, 2),
+            "accuracy": round(accuracy, 2),
+            "final_score": final_score,
+            "improvement": improvement,
+            "feedback": feedback,
+            "improved_answer": improved_answer,
+            "audio_metrics": metrics,
+            "level_update": level_update,
+        }
 
     finally:
         # -----------------------------
@@ -180,7 +200,14 @@ async def submit_attempt(
 
 
 @router.get("/user/{user_id}")
-def get_attempts(user_id: int):
+def get_attempts(user_id: int, token_data: dict = Depends(verify_token)):
+    # 🔐 Optional: ensure user can only access own data
+    token_user = token_data.get("sub")
+
+    if str(user_id) != str(token_user):
+        raise HTTPException(status_code=403, detail="Access denied")
+
     if not get_user(user_id):
         return []
+
     return get_user_attempts(user_id)

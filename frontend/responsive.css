@@ -1,0 +1,41 @@
+@media (max-width: 768px){
+
+  .topbar{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+  }
+
+  .navRight{
+    width:100%;
+    justify-content:space-between;
+    flex-wrap:wrap;
+  }
+
+  .container{
+    padding:15px 10px;
+  }
+
+  .heroTitleBig{
+    font-size:26px;
+  }
+
+  .featureGrid,
+  .grid4,
+  .analyticsGrid,
+  .practiceGrid{
+    grid-template-columns:1fr;
+  }
+
+  .chatBox{
+    max-height:300px;
+  }
+
+  .btn{
+    width:100%;
+  }
+
+  .auth-card{
+    width:100%;
+  }
+}
