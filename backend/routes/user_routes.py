@@ -51,8 +51,14 @@ def login_user(payload: LoginRequest):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    # ✅ FIX: use correct key
+    user_id = user.get("user_id") or user.get("id")
+
+    if not user_id:
+        raise HTTPException(status_code=500, detail="User ID missing")
+
     token = create_access_token({
-        "sub": str(user["user_id"])   # ✅ FIXED
+        "sub": str(user_id)
     })
 
     return {
@@ -60,8 +66,6 @@ def login_user(payload: LoginRequest):
         "token_type": "bearer",
         "user": user
     }
-
-
 # -----------------------------
 # GET USER BY EMAIL
 # -----------------------------
