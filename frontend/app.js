@@ -69,7 +69,6 @@ $("retryBtn").style.display = "none";
   const res = await fetch(`${API_BASE}/question/generate`, {
     method: "POST",
     headers: {"Content-Type": "application/json",
-       "Authorization": "Bearer " + localStorage.getItem("token"),
        ...getAuthHeaders()
     },
     body: JSON.stringify({ level, role, category })
@@ -123,7 +122,6 @@ async function nextQuestion() {
   const res = await fetch(`${API_BASE}/question/followup`, {
     method: "POST",
     headers: {"Content-Type": "application/json",
-      "Authorization": "Bearer " + localStorage.getItem("token"),
       ...getAuthHeaders()
     },
     body: JSON.stringify({
@@ -680,21 +678,21 @@ function updateButtons(state) {
     if (btn) btn.style.display = "none";
   });
 
-  if (state === "initial") {
+  if (state === "initial" && start) {
     start.style.display = "inline-block";
   }
 
-  if (state === "recording") {
+  if (state === "recording" && stop) {
     stop.style.display = "inline-block";
   }
 
-  if (state === "recorded") {
+  if (state === "recorded" && analyze) {
     analyze.style.display = "inline-block";
   }
 
   if (state === "analyzed") {
-    next.style.display = "inline-block";
-    retry.style.display = "inline-block";
+    if (next) next.style.display = "inline-block";
+    if (retry) retry.style.display = "inline-block";
   }
 }
 window.addEventListener("DOMContentLoaded", function () {
