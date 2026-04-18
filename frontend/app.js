@@ -84,77 +84,110 @@ $("retryBtn").style.display = "none";
   $("nextBtn").disabled = true;
   toggleResult(false); // hide AI panel initially
 }
-
 async function nextQuestion() {
-  if (!interviewStarted) {
-    alert("Start interview first");
-    return;
+  try {
+    // 🚫 VALIDATIONS
+    if (!interviewStarted) {
+      alert("Start interview first");
+      return;
+    }
+
+    if (!lastAnswer) {
+      alert("Answer current question first");
+      return;
+    }
+
+    if (questionCount >= maxQuestions) {
+      alert("Interview completed");
+      return;
+    }
+
+    // 🔒 SAFE retry button
+    const retryBtn = $("retryBtn");
+    if (retryBtn) retryBtn.style.display = "none";
+
+    questionCount++;
+
+    // 🧠 ANALYZE ANSWER
+    const quality = analyzeAnswerQuality(lastAnswer);
+
+    let followUpPrompt = "";
+
+    if (quality === "short") {
+      followUpPrompt = "Can you explain your answer in more detail?";
+    } else if (quality === "medium") {
+      followUpPrompt = "Can you give a specific example to support your answer?";
+    } else {
+      followUpPrompt = "Great. Let's move to the next question.";
+    }
+
+    const role = $("role")?.value || "";
+
+    // 🌐 API CALL
+    const res = await fetch(`${API_BASE}/question/followup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders()
+      },
+      body: JSON.stringify({
+        previous_question: currentQuestion,
+        user_answer: lastAnswer,
+        role: role,
+        hint: followUpPrompt
+      })
+    });
+
+    // ❌ HANDLE API ERROR
+    if (!res.ok) {
+      console.error("API Error:", res.status);
+      alert("Failed to generate next question");
+      return;
+    }
+
+    const data = await res.json();
+    console.log("Next question response:", data);
+
+    // ❌ HANDLE EMPTY RESPONSE
+    if (!data.question) {
+      alert("No question generated");
+      return;
+    }
+
+    // ✅ SET NEW QUESTION
+    currentQuestion = data.question.trim();
+
+    // 🔄 RESET STATE
+    lastAnswer = null;
+    isRecording = false;
+    audioChunks = [];
+    mediaRecorder = null;
+
+    // 🔘 SAFE BUTTON HANDLING
+    const startBtn = $("startBtn");
+    if (startBtn) startBtn.style.display = "inline-block";
+
+    const stopBtn = $("stopBtn");
+    if (stopBtn) stopBtn.style.display = "none";
+
+    const submitBtn = $("submitBtn");
+    if (submitBtn) submitBtn.style.display = "none";
+
+    // 🧹 CLEAR RESULT UI
+    toggleResult(false);
+
+    // 💬 SHOW QUESTION
+    addMessage("ai", currentQuestion);
+
+    // 📊 UPDATE PROGRESS
+    updateProgress();
+
+  } catch (error) {
+    console.error("nextQuestion ERROR:", error);
+    alert("Something went wrong. Try again.");
   }
-
-  if (!lastAnswer) {
-    alert("Answer current question first");
-    return;
-  }
-
-  if (questionCount >= maxQuestions) {
-    alert("Interview completed");
-    return;
-  }
- $("retryBtn").style.display = "none";
-  questionCount++;
-
-  const quality = analyzeAnswerQuality(lastAnswer);
-
-  let followUpPrompt = "";
-
-  if (quality === "short") {
-    followUpPrompt = "Can you explain your answer in more detail?";
-  } 
-  else if (quality === "medium") {
-    followUpPrompt = "Can you give a specific example to support your answer?";
-  } 
-  else {
-    followUpPrompt = "Great. Let's move to the next question.";
-  }
-
-  const role = $("role").value;
-
-  const res = await fetch(`${API_BASE}/question/followup`, {
-    method: "POST",
-    headers: {"Content-Type": "application/json",
-      ...getAuthHeaders()
-    },
-    body: JSON.stringify({
-      previous_question: currentQuestion,
-      user_answer: lastAnswer,
-      role: role,
-      hint: followUpPrompt   // 🔥 NEW
-    })
-  });
-
-  const data = await res.json();
-
-  currentQuestion = (data.question || "").trim();
-  // 🔄 RESET STATE (VERY IMPORTANT)
-lastAnswer = null;
-isRecording = false;
-
-// reset audio
-audioChunks = [];
-mediaRecorder = null;
-
-// reset buttons
-$("startBtn").style.display = "inline-block";  // ✅ show start
-$("stopBtn").style.display = "none";
-$("submitBtn").style.display = "none";
-
-// clear previous result UI if needed
-toggleResult(false);
-  addMessage("ai", currentQuestion);
-  updateProgress();
-
-  toggleResult(false);
 }
+
 function endInterview() {
   interviewStarted = false;
   questionCount = 0;
