@@ -1,13 +1,21 @@
 import re
-from difflib import SequenceMatcher
 
-def compute_accuracy_details(transcript: str, expected_text: str) -> dict:
+
+def compute_accuracy_details(transcript: str, question: str) -> dict:
+    """
+    Computes how relevant the user's answer is to the question.
+    Designed for interview-style answers (no fixed expected answer).
+    """
 
     t = (transcript or "").lower().strip()
-    words = re.findall(r"\w+", t)
-    wc = len(words)
+    q = (question or "").lower().strip()
 
-    if not expected_text:
+    words = re.findall(r"\w+", t)
+    q_words = set(re.findall(r"\w+", q))
+
+    word_count = len(words)
+
+    if not t or not q:
         return {
             "score": 0.0,
             "matched_keywords": [],
@@ -16,67 +24,41 @@ def compute_accuracy_details(transcript: str, expected_text: str) -> dict:
             "similarity": 0.0,
         }
 
-    exp_words = list(set(re.findall(r"\w+", expected_text.lower())))
-    transcript_words = set(words)
-
+    # -------------------------
+    # KEYWORD MATCH (QUESTION BASED)
+    # -------------------------
     matched = []
     missing = []
 
-    # -------------------------
-    # STRICTER KEYWORD MATCH
-    # -------------------------
-    for kw in exp_words:
-        found = False
-
-        for w in transcript_words:
-            # exact OR strong partial match only
-            if kw == w or (len(kw) > 4 and kw in w):
-                found = True
-                break
-
-        if found:
+    for kw in q_words:
+        if kw in t:
             matched.append(kw)
         else:
             missing.append(kw)
 
-    coverage = len(matched) / max(1, len(exp_words))
+    coverage = len(matched) / max(1, len(q_words))
 
     # -------------------------
-    # SIMILARITY
+    # SIMPLE SIMILARITY (WORD OVERLAP)
     # -------------------------
-    sim = SequenceMatcher(None, t, expected_text.lower()).ratio()
+    overlap = len(set(words) & q_words)
+    similarity = overlap / max(1, len(q_words))
 
     # -------------------------
-    # WEIGHTED SCORE (STRONGER)
+    # BASE SCORE
     # -------------------------
-    score = (0.7 * coverage + 0.3 * sim) * 10
+    score = (0.7 * coverage + 0.3 * similarity) * 10
 
     # -------------------------
-    # HARD LENGTH PENALTY
+    # LENGTH ADJUSTMENT
     # -------------------------
-    if wc < 5:
-        score -= 4
-    elif wc < 10:
+    if word_count < 5:
         score -= 2
-    elif wc < 20:
-        score -= 1
+    elif word_count > 15:
+        score += 1
 
     # -------------------------
-    # LOW COVERAGE PENALTY
-    # -------------------------
-    if coverage < 0.2:
-        score -= 3
-    elif coverage < 0.4:
-        score -= 1.5
-
-    # -------------------------
-    # VERY LOW SIMILARITY PENALTY
-    # -------------------------
-    if sim < 0.2:
-        score -= 2
-
-    # -------------------------
-    # CLAMP
+    # CLAMP SCORE
     # -------------------------
     score = max(0.0, min(10.0, round(score, 2)))
 
@@ -85,9 +67,9 @@ def compute_accuracy_details(transcript: str, expected_text: str) -> dict:
         "matched_keywords": matched,
         "missing_keywords": missing,
         "keyword_coverage": round(coverage, 3),
-        "similarity": round(sim, 3),
+        "similarity": round(similarity, 3),
     }
 
 
-def compute_accuracy_score(transcript: str, expected_text: str) -> float:
-    return float(compute_accuracy_details(transcript, expected_text)["score"])
+def compute_accuracy_score(transcript: str, question: str) -> float:
+    return float(compute_accuracy_details(transcript, question)["score"])

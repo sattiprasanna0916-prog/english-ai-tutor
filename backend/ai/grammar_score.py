@@ -1,15 +1,19 @@
 import re
 
+
 def compute_grammar_score(transcript: str) -> float:
     t = (transcript or "").strip()
 
     if not t:
         return 0.0
 
-    score = 10.0
+    words = re.findall(r"[a-zA-Z']+", t.lower())
+    wc = len(words)
+
+    score = 8.0  # start lower (more realistic baseline)
 
     # -------------------------
-    # 1. Basic checks (stronger)
+    # 1. Sentence basics
     # -------------------------
     if not t[0].isupper():
         score -= 1
@@ -18,37 +22,23 @@ def compute_grammar_score(transcript: str) -> float:
         score -= 1
 
     # -------------------------
-    # 2. Sentence structure
+    # 2. Repetition errors
     # -------------------------
-    sentences = [s.strip() for s in re.split(r"[.!?]+", t) if s.strip()]
-    words = re.findall(r"[a-zA-Z']+", t.lower())
-    wc = len(words)
-
-    if wc == 0:
-        return 0.0
-
-    # Long single sentence → penalty
-    if len(sentences) == 1 and wc > 12:
-        score -= 1.5
-
-    # Too many short sentences → penalty
-    if len(sentences) > 5:
-        score -= 1
-
-    # -------------------------
-    # 3. Length penalty (stronger)
-    # -------------------------
-    if wc < 5:
-        score -= 3
-    elif wc < 10:
+    if re.search(r"\b(\w+)\s+\1\b", t.lower()):
         score -= 2
-    elif wc < 20:
+
+    # -------------------------
+    # 3. Very short or broken sentences
+    # -------------------------
+    if wc < 4:
+        score -= 2
+    elif wc < 8:
         score -= 1
 
     # -------------------------
-    # 4. Repetition check
+    # 4. Word diversity (basic quality)
     # -------------------------
-    unique_ratio = len(set(words)) / wc
+    unique_ratio = len(set(words)) / max(1, wc)
 
     if unique_ratio < 0.5:
         score -= 2
@@ -56,35 +46,31 @@ def compute_grammar_score(transcript: str) -> float:
         score -= 1
 
     # -------------------------
-    # 5. Grammar pattern issues
+    # 5. Simple grammar mistake patterns
     # -------------------------
-    if re.search(r"\b(\w+)\s+\1\b", t.lower()):
-        score -= 2  # repeated words
+    common_errors = [
+        r"\bi is\b",
+        r"\bhe go\b",
+        r"\bshe go\b",
+        r"\bthey is\b",
+        r"\bi done\b",
+        r"\bi did went\b"
+    ]
 
-    # Missing connectors → stronger penalty
-    connectors = {"because", "and", "so", "but", "then"}
-    if wc > 10 and not any(c in words for c in connectors):
-        score -= 1
-
-    # -------------------------
-    # 6. Filler penalty (stronger)
-    # -------------------------
-    fillers = ["uh", "um", "like", "you know"]
-    filler_count = sum(t.lower().count(f) for f in fillers)
-
-    if filler_count >= 4:
-        score -= 2
-    elif filler_count >= 2:
-        score -= 1
+    for pattern in common_errors:
+        if re.search(pattern, t.lower()):
+            score -= 2
 
     # -------------------------
-    # 7. Missing punctuation inside long text
+    # 6. Sentence structure check
     # -------------------------
-    if wc > 20 and t.count(",") == 0:
-        score -= 1
+    sentences = [s.strip() for s in re.split(r"[.!?]+", t) if s.strip()]
+
+    if len(sentences) == 1 and wc > 15:
+        score -= 1  # long unstructured sentence
 
     # -------------------------
-    # 8. Clamp
+    # 7. Clamp score
     # -------------------------
     score = max(0.0, min(10.0, score))
 

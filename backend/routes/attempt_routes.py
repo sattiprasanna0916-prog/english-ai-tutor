@@ -98,14 +98,19 @@ async def submit_attempt(
         # 4️⃣ SCORING PIPELINE
         # -----------------------------
         try:
-            fluency = float(score_from_audio_transformer(wav_path, transcript))
+            metrics = compute_audio_metrics(wav_path, transcript)
+            fluency = float(metrics.get("fluency_score", 0))
+
+# -------------------------
+# GRAMMAR
+# -------------------------
             grammar = float(compute_grammar_score(transcript))
 
+# -------------------------
+# ACCURACY
+# -------------------------
             acc_details = compute_accuracy_details(transcript, question)
             accuracy = float(acc_details.get("score", 0))
-
-            metrics = compute_audio_metrics(wav_path, transcript)
-
         except Exception as e:
             raise HTTPException(
                 status_code=500,
