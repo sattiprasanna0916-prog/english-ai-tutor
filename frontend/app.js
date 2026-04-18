@@ -135,7 +135,21 @@ async function nextQuestion() {
   const data = await res.json();
 
   currentQuestion = (data.question || "").trim();
+  // 🔄 RESET STATE (VERY IMPORTANT)
+lastAnswer = null;
+isRecording = false;
 
+// reset audio
+audioChunks = [];
+mediaRecorder = null;
+
+// reset buttons
+$("startBtn").style.display = "inline-block";  // ✅ show start
+$("stopBtn").style.display = "none";
+$("submitBtn").style.display = "none";
+
+// clear previous result UI if needed
+toggleResult(false);
   addMessage("ai", currentQuestion);
   updateProgress();
 
